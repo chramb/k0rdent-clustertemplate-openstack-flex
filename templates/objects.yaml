@@ -1,0 +1,9 @@
+{{- range $name, $object := .Values.templates }}
+---
+# Object name: {{ $name }}
+{{- if kindIs "string" $object }}
+{{ tpl $object $ }}
+{{- else }}
+{{ tpl (toYaml $object) $ }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,502 @@
+# Cluster parameters
+controlPlaneNumber: 3 # @schema description: The number of the control-plane machines; minimum: 1; type: integer; required: true
+workersNumber: 2 # @schema description: The number of the worker machines; minimum: 1; type: integer; required: true
+
+clusterNetwork:  # @schema description: The cluster network configuration; type: object
+  pods: # @schema description: The network ranges from which Pod networks are allocated; type: object
+    cidrBlocks: # @schema description: A list of CIDR blocks; type: array; item: string
+    - "10.244.0.0/16"
+  services: # @schema description: The network ranges from which service VIPs are allocated; type: object
+    cidrBlocks: # @schema description: A list of CIDR blocks; type: array; item: string
+    - "10.96.0.0/12"
+  serviceDomain: "cluster.local"
+
+clusterLabels: {} # @schema description: Labels to apply to the cluster; type: object; additionalProperties: true
+clusterAnnotations: {} # @schema description: Annotations to apply to the cluster; type: object; additionalProperties: true
+
+ccmRegional: true # @schema description: Allow OpenStack CCM to set ProviderID with region name; type: boolean
+
+identityRef: # @schema description: OpenStack cluster identity object reference; type: object; required: true
+  name: "" # @schema description: Name of the identity; type: string; required: true
+  cloudName: "" # @schema description: Name of the entry in the clouds.yaml file to use; type: string; required: true
+  region: "" # @schema description: OpenStack region; type: string; required: true
+  caCert: # @schema description: Reference to the secret with the content of a custom CA; type: object
+    secretName: "" # @schema description: The name of the secret with a custom CA in kube-system namespace; type: string
+    path: /etc/cacert # @schema description: The directory where the secret with a custom CA will be mounted; type: string
+
+bastion: # @schema description: Configuration of the bastion host; type: object
+  enabled: false # @schema description: Enable bastion server for SSH access; type: boolean
+  spec: # @schema description: Bastion host spec; type: object
+    sshKeyName: "" # @schema description: SSH public key for accessing the bastion; type: string
+    providerID: "" # @schema description: Provider ID of the bastion server; type: [string, null]
+    flavor: "" # @schema description: Flavor of the bastion server; type: [string, null]
+    image: # @schema description: Bastion host image configuration; type: object
+      filter: # @schema description: Filter describes a query for an image. If specified, the combination of name and tags must return a single matching image or an error will be raised; type: object
+        name: "" # @schema description: Name of the image; type: string
+        tags: [] # @schema description: The tags associated with the desired image; type: array; item: string
+
+managedSecurityGroups: # @schema description: Defines whether OpenStack security groups are managed by the provider or specific rules are provided; type: object
+  allowAllInClusterTraffic: false # @schema description: Allow all traffic within the cluster security groups; type: boolean; required: true
+
+managedSubnets: # @schema description: Subnets managed by OpenStack for the cluster; type: array; item: object
+  - cidr: 10.6.0.0/24 # @schema description: CIDR block for the subnet; type: string
+
+apiServerLoadBalancer: # @schema description: Configuration for external load balancer for API server; type: object
+  enabled: true # @schema description: Enable/disable external load balancer for the API server; type: boolean
+
+externalNetwork: # @schema description: External network configuration for the cluster; type: object
+  id: # @schema description: ID of the external network; type: [string, null]
+  filter: # @schema description: Filter specifies a filter to select an OpenStack network; type: object
+    name: "" # @schema description: Name of the external network; type: string
+
+controlPlane: # @schema description: Configuration of the control plane instances; type: object
+  sshKeyName: "" # @schema description: SSH public key for accessing nodes; type: string
+  providerID: "" # @schema description: Unique ID for the instance provider; type: [string, null]
+  flavor: "" # @schema description: OpenStack flavor for instance size; type: string; required: true
+  image: # @schema description: Image configuration; type: object
+    filter: # @schema description: Filter describes a query for an image. If specified, the combination of name and tags must return a single matching image or an error will be raised; type: object
+      name: "" # @schema description: Name of the image; type: string
+      tags: [] # @schema description: The tags associated with the desired image; type: array; item: string
+  portOpts: [] # @schema description: Ports to be attached to the server instance; type: array; item: string
+  rootVolume: {} # @schema description: The volume metadata to boot from; type: object
+  additionalBlockDevices: [] # @schema description: AdditionalBlockDevices is a list of specifications for additional block devices to attach to the server instance; type: array; item: object
+  securityGroups: # @schema description: Security groups to be assigned to the instance; type: array; item: object
+    - filter:
+        name: "default" # @schema description: Name of the security group to filter by; type: string
+        description: "" # @schema description: Description for filtering; type: string
+        projectID: "" # @schema description: Optional: project ID for filtering; type: string
+
+worker: # @schema description: Configuration of the worker instances; type: object
+  sshKeyName: "" # @schema description: SSH public key for accessing nodes; type: string
+  providerID: "" # @schema description: Unique ID for the instance provider; type: [string, null]
+  flavor: "" # @schema description: OpenStack flavor for instance size; type: string; required: true
+  image: # @schema description: Image configuration; type: object
+    filter: # @schema description: Filter describes a query for an image. If specified, the combination of name and tags must return a single matching image or an error will be raised; type: object
+      name: "" # @schema description: Name of the image; type: string
+      tags: [] # @schema description: The tags associated with the desired image; type: array; item: string
+  portOpts: [] # @schema description: Ports to be attached to the server instance; type: array; item: string
+  rootVolume: {} # @schema description: The volume metadata to boot from; type: object
+  additionalBlockDevices: [] # @schema description: AdditionalBlockDevices is a list of specifications for additional block devices to attach to the server instance; type: array; item: object
+  securityGroups: # @schema description: Security groups to be assigned to the instance; type: array; item: object
+    - filter:
+        name: "default" # @schema description: Name of the security group to filter by; type: string
+        description: "" # @schema description: Description for filtering; type: string
+        projectID: "" # @schema description: Optional: project ID for filtering; type: string
+
+# K0s parameters
+k0s: # @schema description: K0s parameters; type: object
+  version: v1.32.6+k0s.0 # @schema description: K0s version; type: string; required: true
+  arch: amd64 # @schema description: K0s Download URL Arch; type: string; enum: amd64, arm64, arm; default: amd64
+  cpArgs: [] # @schema description: Args specifies extra arguments to be passed to k0s controller. See: https://docs.k0sproject.io/stable/cli/k0s_controller/; type: array; item: string; uniqueItems: true
+  workerArgs: [] # @schema description: Args specifies extra arguments to be passed to k0s worker. See: https://docs.k0sproject.io/stable/worker-node-config/ See: https://docs.k0sproject.io/stable/cli/k0s_worker/; type: array; item: string; uniqueItems: true
+  api: # @schema description: Kubernetes API server parameters; type: object
+    extraArgs: {} # @schema description: Map of key-values (strings) for any extra arguments to pass down to Kubernetes api-server process; type: object; additionalProperties: true
+
+
+templates:
+  cluster: |
+    apiVersion: cluster.x-k8s.io/v1beta1
+    kind: Cluster
+    metadata:
+      name: {{ include "cluster.name" . }}
+      {{- if .Values.clusterLabels }}
+      labels: {{- toYaml .Values.clusterLabels | nindent 4}}
+      {{- end }}
+      {{- if .Values.clusterAnnotations }}
+      annotations: {{- toYaml .Values.clusterAnnotations | nindent 4}}
+      {{- end }}
+    spec:
+      {{- with .Values.clusterNetwork }}
+      clusterNetwork:
+        {{- toYaml . | nindent 4 }}
+      {{- end }}
+      controlPlaneRef:
+        apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+        kind: K0sControlPlane
+        name: {{ include "k0scontrolplane.name" .  }}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: OpenStackCluster
+        name: {{ include "cluster.name" . }}
+  k0scontrolplane: |
+    {{- $global := .Values.global | default dict }}
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: K0sControlPlane
+    metadata:
+      name: {{ include "k0scontrolplane.name" . }}
+    spec:
+      replicas: {{ .Values.controlPlaneNumber }}
+      version: {{ .Values.k0s.version }}
+      k0sConfigSpec:
+        {{- if $global.k0sURL }}
+        downloadURL: "{{ $global.k0sURL }}/k0s-{{ .Values.k0s.version }}-{{ .Values.k0s.arch }}"
+        {{- end }}
+        {{- if or $global.registryCertSecret $global.k0sURLCertSecret }}
+        {{- $certs := dict "registry.crt" $global.registryCertSecret "k0s-url.crt" $global.k0sURLCertSecret }}
+        files:
+          {{- range $path, $secret := $certs }}
+          {{- if $secret }}
+          - contentFrom:
+              secretRef:
+                name: {{ $secret }}
+                key: ca.crt
+            permissions: "0664"
+            path: /usr/local/share/ca-certificates/{{ $path }}
+          {{- end }}
+          {{- end }}
+        preStartCommands:
+        - "sudo update-ca-certificates"
+        {{- end }}
+        args:
+          - --enable-worker
+          - --enable-cloud-provider
+          - --kubelet-extra-args="--cloud-provider=external"
+          - --disable-components=konnectivity-server
+          {{- range $arg := .Values.k0s.cpArgs }}
+          - {{ toYaml $arg }}
+          {{- end }}
+        k0s:
+          apiVersion: k0s.k0sproject.io/v1beta1
+          kind: ClusterConfig
+          metadata:
+            name: k0s
+          spec:
+            api:
+              extraArgs:
+                anonymous-auth: "true"
+                {{- with .Values.k0s.api.extraArgs }}
+                  {{- toYaml . | nindent 12 }}
+                {{- end }}
+            network:
+              provider: calico
+              calico:
+                mode: vxlan
+            {{- if $global.registry }}
+            images:
+              metricsserver:
+                image: "{{ $global.registry }}/metrics-server/metrics-server"
+              kubeproxy:
+                image: "{{ $global.registry }}/k0sproject/kube-proxy"
+              coredns:
+                image: "{{ $global.registry }}/k0sproject/coredns"
+              pause:
+                image: "{{ $global.registry }}/pause"
+              calico:
+                cni:
+                  image: "{{ $global.registry }}/k0sproject/calico-cni"
+                node:
+                  image: "{{ $global.registry }}/k0sproject/calico-node"
+                kubecontrollers:
+                  image: "{{ $global.registry }}/k0sproject/calico-kube-controllers"
+            {{- end }}
+            extensions:
+              helm:
+                {{- if not $global.registry }}
+                repositories:
+                  - name: openstack
+                    url: https://kubernetes.github.io/cloud-provider-openstack/
+                {{- end }}
+                charts:
+                  - name: openstack-ccm
+                    {{- if $global.registry }}
+                    chartname: oci://{{ $global.registry }}/charts/openstack-cloud-controller-manager
+                    {{- else }}
+                    chartname: openstack/openstack-cloud-controller-manager
+                    {{- end }}
+                    version: 2.31.1
+                    order: 1
+                    namespace: kube-system
+                    values: |
+                      {{- if $global.registry }}
+                      image:
+                        repository: {{ $global.registry }}/provider-os/openstack-cloud-controller-manager
+                      {{- end }}
+                      secret:
+                        enabled: true
+                        name: openstack-cloud-config
+                        create: false
+                      nodeSelector:
+                        node-role.kubernetes.io/control-plane: "true"
+                      tolerations:
+                        - key: node.cloudprovider.kubernetes.io/uninitialized
+                          value: "true"
+                          effect: NoSchedule
+                        - key: node-role.kubernetes.io/control-plane
+                          effect: NoSchedule
+                        - key: node-role.kubernetes.io/master
+                          effect: NoSchedule
+                      extraEnv:
+                        - name: OS_CCM_REGIONAL
+                          value: {{ .Values.ccmRegional | quote }}
+                      extraVolumes:
+                        - name: flexvolume-dir
+                          hostPath:
+                            path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+                        - name: k8s-certs
+                          hostPath:
+                            path: /etc/kubernetes/pki
+                        {{- if and .Values.identityRef.caCert .Values.identityRef.caCert.secretName }}
+                        - name: cloud-ca-cert
+                          secret:
+                            secretName: {{ .Values.identityRef.caCert.secretName }}
+                        {{- end }}
+                      extraVolumeMounts:
+                        - name: flexvolume-dir
+                          mountPath: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+                          readOnly: true
+                        - name: k8s-certs
+                          mountPath: /etc/kubernetes/pki
+                          readOnly: true
+                        {{- if and .Values.identityRef.caCert .Values.identityRef.caCert.secretName }}
+                        - name: cloud-ca-cert
+                          mountPath: {{ .Values.identityRef.caCert.path }}
+                        {{- end }}
+                  - name: openstack-csi
+                    {{- if $global.registry }}
+                    chartname: oci://{{ $global.registry }}/charts/openstack-cinder-csi
+                    {{- else }}
+                    chartname: openstack/openstack-cinder-csi
+                    {{- end }}
+                    version: 2.31.2
+                    order: 2
+                    namespace: kube-system
+                    values: |
+                      storageClass:
+                        enabled: true
+                        delete:
+                          isDefault: false
+                          allowVolumeExpansion: true
+                        retain:
+                          isDefault: false
+                          allowVolumeExpansion: false
+                      secret:
+                        enabled: true
+                        name: openstack-cloud-config
+                        create: false
+                      csi:
+                        {{- if $global.registry }}
+                        attacher:
+                          image:
+                            repository: {{ $global.registry }}/sig-storage/csi-attacher
+                        provisioner:
+                          image:
+                            repository: {{ $global.registry }}/sig-storage/csi-provisioner
+                        snapshotter:
+                          image:
+                            repository: {{ $global.registry }}/sig-storage/csi-snapshotter
+                        resizer:
+                          image:
+                            repository: {{ $global.registry }}/sig-storage/csi-resizer
+                        livenessprobe:
+                          image:
+                            repository: {{ $global.registry }}/sig-storage/livenessprobe
+                        nodeDriverRegistrar:
+                          image:
+                            repository: {{ $global.registry }}/sig-storage/csi-node-driver-registrar
+                        {{- end }}
+                        plugin:
+                          {{- if $global.registry }}
+                          image:
+                            repository: {{ $global.registry }}/provider-os/cinder-csi-plugin
+                          {{- end }}
+                          nodePlugin:
+                            kubeletDir: /var/lib/k0s/kubelet
+                          {{- if and .Values.identityRef.caCert .Values.identityRef.caCert.secretName }}
+                          volumes:
+                          - name: cloud-ca-cert
+                            secret:
+                              secretName: {{ .Values.identityRef.caCert.secretName }}
+                          volumeMounts:
+                          - name: cloud-config
+                            mountPath: /etc/kubernetes
+                            readOnly: true
+                          - name: cloud-ca-cert
+                            mountPath: {{ .Values.identityRef.caCert.path }}
+                         {{- end }}
+      machineTemplate:
+        infrastructureRef:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+          kind: OpenStackMachineTemplate
+          name: {{ include "openstackmachinetemplate.controlplane.name" . }}
+          namespace: {{ .Release.Namespace }}
+  k0sworkerconfigtemplate: |
+    {{- $global := .Values.global | default dict }}
+    apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+    kind: K0sWorkerConfigTemplate
+    metadata:
+      name: {{ include "k0sworkerconfigtemplate.name" . }}
+    spec:
+      template:
+        spec:
+          {{- if $global.k0sURL }}
+          downloadURL: "{{ $global.k0sURL }}/k0s-{{ .Values.k0s.version }}-{{ .Values.k0s.arch }}"
+          {{- end }}
+          {{- if or $global.registryCertSecret $global.k0sURLCertSecret }}
+          {{- $certs := dict "registry.crt" $global.registryCertSecret "k0s-url.crt" $global.k0sURLCertSecret }}
+          files:
+            {{- range $path, $secret := $certs }}
+            {{- if $secret }}
+            - contentFrom:
+                secretRef:
+                  name: {{ $secret }}
+                  key: ca.crt
+              permissions: "0664"
+              path: /usr/local/share/ca-certificates/{{ $path }}
+            {{- end }}
+            {{- end }}
+          preStartCommands:
+          - "sudo update-ca-certificates"
+          {{- end }}
+          version: {{ .Values.k0s.version }}
+          args:
+          - --enable-cloud-provider
+          - --kubelet-extra-args="--cloud-provider=external"
+          {{- range $arg := .Values.k0s.workerArgs }}
+          - {{ toYaml $arg }}
+          {{- end }}
+  machinedeployment: |
+    apiVersion: cluster.x-k8s.io/v1beta1
+    kind: MachineDeployment
+    metadata:
+      name: {{ include "machinedeployment.name" . }}
+      annotations:
+        # Temporary fix to address https://github.com/k0sproject/k0smotron/issues/911
+        machineset.cluster.x-k8s.io/skip-preflight-checks: "ControlPlaneIsStable"
+    spec:
+      clusterName: {{ include "cluster.name" . }}
+      replicas: {{ .Values.workersNumber }}
+      selector:
+        matchLabels:
+          cluster.x-k8s.io/cluster-name: {{ include "cluster.name" . }}
+      template:
+        metadata:
+          labels:
+            cluster.x-k8s.io/cluster-name: {{ include "cluster.name" . }}
+        spec:
+          bootstrap:
+            configRef:
+              apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+              kind: K0sWorkerConfigTemplate
+              name: {{ include "k0sworkerconfigtemplate.name" . }}
+          clusterName: {{ include "cluster.name" . }}
+          infrastructureRef:
+            apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+            kind: OpenStackMachineTemplate
+            name: {{ include "openstackmachinetemplate.worker.name" . }}  
+  openstackcluster: |
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: OpenStackCluster
+    metadata:
+      name: {{ include "cluster.name" . }}
+    spec:
+      {{- if .Values.apiServerLoadBalancer }}
+      apiServerLoadBalancer:
+        {{- toYaml .Values.apiServerLoadBalancer | nindent 4 }}
+      {{- end }}
+      {{- if .Values.bastion.enabled }}
+      bastion:
+      {{- with .Values.bastion.spec }}
+        spec:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.externalNetwork }}
+      externalNetwork:
+        {{- toYaml .Values.externalNetwork | nindent 4 }}
+      {{- end }}
+      {{- if .Values.identityRef }}
+      identityRef:
+        name: {{ .Values.identityRef.name }}
+        cloudName: {{ .Values.identityRef.cloudName | default "openstack" }}
+        region: {{ .Values.identityRef.region | default "RegionOne" }}
+      {{- end }}
+      managedSecurityGroups:
+        {{- toYaml .Values.managedSecurityGroups | nindent 4 }}
+      {{- if .Values.managedSubnets }}
+      managedSubnets:
+        {{- toYaml .Values.managedSubnets | nindent 4 }}
+      {{- end }}
+  openstackmachinetemplate-controlplane: |
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: OpenStackMachineTemplate
+    metadata:
+      name: {{ include "openstackmachinetemplate.controlplane.name" . }}
+    spec:
+      template:
+        spec:
+          flavor: {{ .Values.controlPlane.flavor }}
+          identityRef:
+            name: {{ .Values.identityRef.name }}
+            region: {{ .Values.identityRef.region }}
+            cloudName: {{ .Values.identityRef.cloudName}}
+          image:
+            filter:
+              name: {{ .Values.controlPlane.image.filter.name }}
+              {{- if .Values.controlPlane.image.filter.tags }}
+              tags:
+                {{- range $tag := .Values.controlPlane.image.filter.tags }}
+                - {{ $tag }}
+                {{- end }}
+              {{- end }}
+          {{- if gt (len .Values.controlPlane.portOpts) 0 }}
+          portOpts:
+            {{ .Values.controlPlane.portOpts | toYaml | nindent 8 }}
+          {{- end }}
+          {{- if .Values.controlPlane.rootVolume }}
+          rootVolume:
+            {{ .Values.controlPlane.rootVolume | toYaml | nindent 8 }}
+          {{- end }}
+          {{- if gt (len .Values.controlPlane.additionalBlockDevices) 0 }}
+          additionalBlockDevices:
+            {{ .Values.controlPlane.additionalBlockDevices | toYaml | nindent 8 }}
+          {{- end }}
+          {{- if gt (len .Values.controlPlane.securityGroups) 0 }}
+          securityGroups:
+            {{ .Values.controlPlane.securityGroups | toYaml | nindent 8 }}
+          {{- end }}
+          {{- $sshKey := .Values.controlPlane.sshKeyName | default .Values.controlPlane.sshPublicKey }}
+          {{- if $sshKey }}
+          sshKeyName: {{ $sshKey }}
+          {{- end }}
+  openstackmachinetemplate-worker: |
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: OpenStackMachineTemplate
+    metadata:
+      name: {{ include "openstackmachinetemplate.worker.name" . }}
+    spec:
+      template:
+        spec:
+          flavor: {{ .Values.worker.flavor }}
+          identityRef:
+            name: {{ .Values.identityRef.name }}
+            region: {{ .Values.identityRef.region }}
+            cloudName: {{ .Values.identityRef.cloudName}}
+          image:
+            filter:
+              name: {{ .Values.worker.image.filter.name }}
+              {{- if .Values.worker.image.filter.tags }}
+              tags:
+                {{- range $tag := .Values.worker.image.filter.tags }}
+                - {{ $tag }}
+                {{- end }}
+              {{- end }}
+          {{- if gt (len .Values.worker.portOpts) 0 }}
+          portOpts:
+            {{ .Values.worker.portOpts | toYaml | nindent 8 }}
+          {{- end }}
+          {{- if .Values.worker.rootVolume }}
+          rootVolume:
+            {{ .Values.worker.rootVolume | toYaml | nindent 8 }}
+          {{- end }}
+          {{- if gt (len .Values.worker.additionalBlockDevices) 0 }}
+          additionalBlockDevices:
+            {{ .Values.worker.additionalBlockDevices | toYaml | nindent 8 }}
+          {{- end }}
+          {{- if gt (len .Values.worker.securityGroups) 0 }}
+          securityGroups:
+            {{ .Values.worker.securityGroups | toYaml | nindent 8 }}
+          {{- end }}
+          {{- $sshKey := .Values.worker.sshKeyName | default .Values.worker.sshPublicKey }}
+          {{- if $sshKey }}
+          sshKeyName: {{ $sshKey }}
+          {{- end }}
